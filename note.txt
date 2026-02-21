@@ -1,0 +1,82 @@
+  Phase 1 完成總結                                                              
+                                                                                
+  項目: 目錄結構  
+  狀態: Done
+  說明: 完整建立 app/, infra/, migrations/, tests/
+  ────────────────────────────────────────
+  項目: Docker Compose
+  狀態: Done
+  說明: db (pgvector:pg16) + redis (7-alpine) + api，含 healthcheck 依賴
+  ────────────────────────────────────────
+  項目: Dockerfile
+  狀態: Done
+  說明: Python 3.10-slim，含 uvicorn --reload
+  ────────────────────────────────────────
+  項目: core/config.py
+  狀態: Done
+  說明: pydantic-settings 讀取 .env，含所有 Provider Keys
+  ────────────────────────────────────────
+  項目: core/logger.py
+  狀態: Done
+  說明: JSON 結構化日誌（你建議的 Observability）
+  ────────────────────────────────────────
+  項目: db/session.py
+  狀態: Done
+  說明: AsyncSession + async_sessionmaker，get_db() dependency
+  ────────────────────────────────────────
+  項目: Models (8 tables)
+  狀態: Done
+  說明: users, user_identities, parent_docs, child_chunks, conversations,
+    messages, usage_quotas, audit_logs
+  ────────────────────────────────────────
+  項目: parent_docs.search_vector
+  狀態: Done
+  說明: TSVector + GIN Index（你建議的 Hybrid Search）
+  ────────────────────────────────────────
+  項目: child_chunks.embedding
+  狀態: Done
+  說明: Vector(1024) BGE-M3 + HNSW Index
+  ────────────────────────────────────────
+  項目: main.py
+  狀態: Done
+  說明: Lifespan、CORS Middleware、全局 Exception
+    Handler（多語言）、/health（檢查 DB+Redis）
+  ────────────────────────────────────────
+  項目: Alembic
+  狀態: Done
+  說明: Async env.py + 初始 migration（全部核心表一次建立）
+  ────────────────────────────────────────
+  項目: i18n
+  狀態: Done
+  說明: en.json + zh_hk.json 錯誤碼與提示訊息
+  ────────────────────────────────────────
+  項目: tests/conftest.py
+  狀態: Done
+  說明: SQLite StaticPool + AsyncClient fixture（你建議的測試隔離）
+  ────────────────────────────────────────
+  項目: .env / .gitignore
+  狀態: Done
+  說明: 安全配置
+
+  下一步：你可以用 docker compose up -d 啟動 infra，然後 alembic upgrade head
+  執行 migration。準備好進入 Phase 2（Auth System + JWT）時話我知。
+
+ Infrastructure 狀態：                                                         
+  - PostgreSQL (pgvector:pg16) — healthy, port 5432                             
+  - Redis (7-alpine) — healthy, port 6379                                       
+  - Extensions：vector 0.8.1 + pg_trgm 1.6                                      
+                                                                                
+  8 張核心表已建立：                                                            
+  users, user_identities, parent_docs, child_chunks, conversations, messages,   
+  usage_quotas, audit_logs                                                      
+
+  關鍵索引已就位：
+  - ix_child_chunks_embedding_hnsw — HNSW 向量索引 (cosine, 1024d)
+  - ix_parent_docs_search_vector — GIN 全文搜索索引 (TSVector)
+  - 所有 FK 欄位都有 B-tree 索引
+
+  修正記錄：
+  - config.py 加入 "extra": "ignore" 以容許 .env 中 Docker
+  專用變數（POSTGRES_USER 等）
+
+  Phase 1 基礎設施搭建完成，隨時可以開始 Phase 2。

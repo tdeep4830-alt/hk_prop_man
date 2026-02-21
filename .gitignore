@@ -1,0 +1,46 @@
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes (local)
+pgdata/
+redisdata/
+phoenixdata/
+prometheusdata/
+grafanadata/
+
+# RAG document data (large files, managed separately)
+rag_data/
+
+# Alembic
+migrations/versions/__pycache__/
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Logs
+*.log

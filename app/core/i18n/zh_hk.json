@@ -1,0 +1,28 @@
+{
+  "error": {
+    "internal": "系統發生內部錯誤，請稍後再試。",
+    "not_found": "找不到所請求的資源。",
+    "unauthorized": "需要驗證身份才能存取此資源。",
+    "forbidden": "您沒有權限存取此資源。",
+    "rate_limited": "請求次數過多，請稍後再試。",
+    "validation": "請求數據無效。"
+  },
+  "auth": {
+    "register_ok": "註冊成功。",
+    "email_exists": "此電郵已被註冊。",
+    "invalid_credentials": "電郵或密碼不正確。",
+    "quota_exceeded": "您今日的查詢次數已達上限（{limit} 次）。請升級會員或明天再試。",
+    "token_invalid": "認證令牌無效或已過期。"
+  },
+  "health": {
+    "ok": "服務運作正常。",
+    "degraded": "服務正在有限功能下運作。"
+  },
+  "chat": {
+    "no_context": "未能從資料庫中找到與您問題相關的內容。",
+    "disclaimer_legal": "以上資料僅供一般參考，不構成法律意見。如需處理具體個案，請諮詢持牌律師。",
+    "pii_detected": "已偵測到個人資料並已自動遮蔽處理。",
+    "stream_error": "生成回答時發生錯誤，請稍後再試。",
+    "conversation_not_found": "找不到指定的對話記錄。"
+  }
+}

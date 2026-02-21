@@ -1,0 +1,28 @@
+{
+  "error": {
+    "internal": "An internal error occurred. Please try again later.",
+    "not_found": "The requested resource was not found.",
+    "unauthorized": "Authentication is required to access this resource.",
+    "forbidden": "You do not have permission to access this resource.",
+    "rate_limited": "Too many requests. Please try again later.",
+    "validation": "Invalid request data."
+  },
+  "auth": {
+    "register_ok": "Registration successful.",
+    "email_exists": "This email is already registered.",
+    "invalid_credentials": "Incorrect email or password.",
+    "quota_exceeded": "You have reached today's query limit ({limit} queries). Please upgrade your plan or try again tomorrow.",
+    "token_invalid": "Authentication token is invalid or expired."
+  },
+  "health": {
+    "ok": "Service is healthy.",
+    "degraded": "Service is running with limited functionality."
+  },
+  "chat": {
+    "no_context": "No relevant content found in the knowledge base for your query.",
+    "disclaimer_legal": "The above information is for general reference only and does not constitute legal advice. Please consult a licensed solicitor for specific cases.",
+    "pii_detected": "Personal data was detected and has been automatically redacted.",
+    "stream_error": "An error occurred while generating the response. Please try again later.",
+    "conversation_not_found": "The specified conversation was not found."
+  }
+}
