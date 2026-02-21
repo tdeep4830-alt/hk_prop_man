@@ -6,7 +6,8 @@ and ts_rank (full-text search) results with weighted combination.
 
 from dataclasses import dataclass
 
-from sqlalchemy import text
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import bindparam, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -39,9 +40,9 @@ WITH vector_results AS (
         cc.id AS child_id,
         cc.parent_id,
         cc.search_text,
-        1 - (cc.embedding <=> :query_vector::vector) AS vec_score
+        1 - (cc.embedding <=> :query_vector) AS vec_score
     FROM child_chunks cc
-    ORDER BY cc.embedding <=> :query_vector::vector
+    ORDER BY cc.embedding <=> :query_vector
     LIMIT :fetch_limit
 ),
 keyword_results AS (
@@ -72,7 +73,7 @@ SELECT *
 FROM combined
 ORDER BY combined_score DESC
 LIMIT :top_k
-""")
+""").bindparams(bindparam("query_vector", type_=Vector(1024)))
 
 
 class HybridRetriever:
@@ -90,12 +91,11 @@ class HybridRetriever:
         fetch_limit = top_k * 3
 
         query_vector = await _embedding_service.embed_single(query)
-        vector_str = "[" + ",".join(str(v) for v in query_vector) + "]"
 
         result = await db.execute(
             _HYBRID_SQL,
             {
-                "query_vector": vector_str,
+                "query_vector": query_vector,
                 "query_text": query,
                 "fetch_limit": fetch_limit,
                 "top_k": top_k,
