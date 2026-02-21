@@ -15,7 +15,7 @@ from collections.abc import AsyncGenerator
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import StaticPool
+from sqlalchemy import StaticPool, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.db.base import Base
@@ -105,7 +105,12 @@ async def pg_session() -> AsyncGenerator[AsyncSession, None]:
     """Real PostgreSQL session for integration tests.
 
     Requires TEST_DATABASE_URL env var (e.g. postgresql+asyncpg://...).
-    Creates all tables before the test, drops them after.
+    Relies on ``alembic upgrade head`` (run before tests in CI) to have
+    created the schema.  Uses TRUNCATE for per-test isolation instead of
+    create_all / drop_all so that PostgreSQL ENUM types created by Alembic
+    are never re-created or dropped mid-test-run (which causes "type already
+    exists" / "type does not exist" errors).
+
     Run with: pytest -m integration
     """
     db_url = os.environ.get(
@@ -113,19 +118,18 @@ async def pg_session() -> AsyncGenerator[AsyncSession, None]:
         "postgresql+asyncpg://propman:propman_secret@localhost:5432/propman_ai",
     )
     engine = create_async_engine(db_url, echo=False)
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
     factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+    # Truncate test tables before each test for a clean slate.
+    # CASCADE handles the child_chunks FK automatically.
+    async with factory() as pre_session:
+        await pre_session.execute(text("TRUNCATE child_chunks, parent_docs CASCADE"))
+        await pre_session.commit()
 
     async with factory() as session:
         try:
             yield session
         finally:
             await session.rollback()
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
 
     await engine.dispose()
