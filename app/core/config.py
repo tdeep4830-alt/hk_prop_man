@@ -3,6 +3,7 @@
 from pydantic_settings import BaseSettings
 
 
+
 class Settings(BaseSettings):
     """Central configuration for HK-PropTech AI."""
 

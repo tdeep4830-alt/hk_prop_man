@@ -45,11 +45,14 @@ async def main(args: argparse.Namespace) -> None:
                 logger.error(f"File not found: {file_path}")
                 return
 
-            # Determine processor from file extension
+            # Determine processor from file extension (and path for .txt)
             ext = file_path.suffix.lower()
-            processor_key = {".rtf": "legislation", ".doc": "court_case", ".json": "guideline"}.get(ext)
+            if ext == ".txt":
+                processor_key = "scraped_case"
+            else:
+                processor_key = {".rtf": "legislation", ".doc": "court_case", ".json": "guideline"}.get(ext)
             if not processor_key:
-                logger.error(f"Unknown file type: {ext}")
+                logger.error(f"Unknown file type: {ext}. Supported: .rtf, .doc, .json, .txt")
                 return
 
             processor = _PROCESSORS[processor_key]

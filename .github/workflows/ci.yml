@@ -90,9 +90,22 @@ jobs:
         env:
           DATABASE_URL: postgresql+asyncpg://propman:propman_secret@localhost:5432/propman_ai
 
-      - name: Run RAGAS Evaluation
+      - name: Run RAGAS Evaluation (Medium + Hard)
         run: |
-          pytest tests/test_rag/test_ragas_eval.py \
+          pytest tests/test_rag/test_ragas_eval.py::test_rag_quality_medium_hard \
+            -m eval \
+            -v \
+            --timeout=600
+        env:
+          DATABASE_URL: postgresql+asyncpg://propman:propman_secret@localhost:5432/propman_ai
+          REDIS_URL: redis://localhost:6379/0
+          SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # Evaluates real LLM answers vs retrieved context; score < 0.75 blocks deploy
+
+      - name: Run RAGAS Evaluation (Simple / No-Retrieval)
+        run: |
+          pytest tests/test_rag/test_ragas_eval.py::test_rag_quality_simple \
             -m eval \
             -v \
             --timeout=300
@@ -101,7 +114,7 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          # If avg RAGAS score < 0.75, pytest assert fails → job fails → blocks deploy
+          # Evaluates LLM parametric knowledge without retrieval; score < 0.75 blocks deploy
 
   # ---------------------------------------------------------------------------
   # Job 3: Retriever Integration Tests — runs alongside unit tests on push/PR

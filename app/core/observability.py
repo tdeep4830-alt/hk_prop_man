@@ -32,6 +32,18 @@ LLM_TOKENS_TOTAL = Counter(
     ["model", "type"],  # type: "prompt" | "completion"
 )
 
+RAG_COMPLEXITY_TOTAL = Counter(
+    "rag_complexity_total",
+    "RAG queries broken down by complexity tier",
+    ["complexity"],  # simple | medium | hard
+)
+
+RAG_CATEGORY_TOTAL = Counter(
+    "rag_category_total",
+    "RAG queries broken down by domain category",
+    ["category"],  # one of the 14 Category enum values
+)
+
 
 # ---------------------------------------------------------------------------
 # Initialisation helpers

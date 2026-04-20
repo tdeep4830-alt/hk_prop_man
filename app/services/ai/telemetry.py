@@ -24,6 +24,8 @@ class TelemetryLogger:
         latency_ms: int,
         llm_model: str,
         db: AsyncSession,
+        complexity: str | None = None,
+        category: str | None = None,
     ) -> None:
         # PDPO: only store original query if no PII detected
         detail = {
@@ -31,14 +33,16 @@ class TelemetryLogger:
             "pii_types": [p["type"] for p in pii_found] if pii_found else [],
             "chunks": [
                 {
-                    "child_id": c.child_id,
-                    "parent_id": c.parent_id,
+                    "child_id": str(c.child_id),
+                    "parent_id": str(c.parent_id),
                     "combined_score": round(c.combined_score, 4),
                     "doc_type": c.doc_type,
                 }
                 for c in retrieved_chunks
             ],
             "intent": intent,
+            "complexity": complexity,
+            "category": category,
             "latency_ms": latency_ms,
             "llm_model": llm_model,
             "token_usage": token_usage,

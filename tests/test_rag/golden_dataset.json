@@ -2,101 +2,270 @@
   {
     "question": "業主立案法團可以用法團名義入稟嗎？",
     "ground_truth": "根據《建築物管理條例》（第344章）第16條，業主立案法團具有法人地位，可以自己的名義起訴及被訴，並可作為原告或被告進行訴訟。",
-    "intent": "legal_definition"
+    "intent": "legal_definition",
+    "category": "owners_corporation",
+    "complexity": "medium"
   },
   {
     "question": "「公用部分」在《建築物管理條例》的法律定義係咩？",
     "ground_truth": "根據《建築物管理條例》第2條，「公用部分」指建築物、土地及設施中並非業主專屬的部分，包括外牆、天台、走廊、電梯及共用設施等，由全體業主共同擁有及管理。",
-    "intent": "legal_definition"
+    "intent": "legal_definition",
+    "category": "building_management_ordinance",
+    "complexity": "medium"
   },
   {
     "question": "業主大會同特別業主大會有咩分別？",
     "ground_truth": "業主大會（AGM）係每年定期召開的會議，處理法團周年事務如通過賬目、選舉管委會等。特別業主大會（EGM）則係在特定情況下召開的臨時大會，例如處理緊急事項、罷免管委會委員等。根據第344章，兩者均須按照規定通知期召開。",
-    "intent": "legal_definition"
+    "intent": "legal_definition",
+    "category": "general_meetings",
+    "complexity": "medium"
   },
   {
     "question": "管理委員會在《建築物管理條例》下的主要職責係咩？",
     "ground_truth": "根據《建築物管理條例》第344章，管理委員會（MC）的職責包括：執行業主大會的決議、管理公用部分、收取管理費、委聘物業管理公司、保存法團財務賬目及紀錄，以及代表法團處理日常事務。",
-    "intent": "legal_definition"
+    "intent": "legal_definition",
+    "category": "management_committee",
+    "complexity": "medium"
   },
   {
     "question": "「業主」在《建築物管理條例》的法律定義係點？",
     "ground_truth": "根據《建築物管理條例》第2條，「業主」指在土地註冊處登記為物業擁有人的人士。如物業由多人共同擁有，所有共同業主均為業主。法團的成員資格以業主身份為準。",
-    "intent": "legal_definition"
+    "intent": "legal_definition",
+    "category": "building_management_ordinance",
+    "complexity": "medium"
   },
   {
     "question": "業主立案法團的法律地位係點？有否獨立法人資格？",
     "ground_truth": "根據《建築物管理條例》第344章第16條，業主立案法團成立後即成為法人，具有獨立法人地位，可以擁有財產、簽訂合約、起訴及被訴，與個別業主的法律責任分開。",
-    "intent": "legal_definition"
+    "intent": "legal_definition",
+    "category": "owners_corporation",
+    "complexity": "medium"
   },
   {
     "question": "管理費係咩性質？業主有法律責任繳交嗎？",
     "ground_truth": "管理費係業主根據大廈公契及《建築物管理條例》須向法團或管理公司繳交的費用，用於支付公用部分的管理及維修開支。業主有法律責任按其份數繳交管理費，欠交管理費可被法團以法律程序追討。",
-    "intent": "legal_definition"
+    "intent": "legal_definition",
+    "category": "financial_arrangements",
+    "complexity": "medium"
   },
   {
     "question": "成立業主立案法團的程序係點？",
     "ground_truth": "成立業主立案法團須經以下程序：(1) 由不少於持有建築物份數總額20%的業主以書面申請召開業主大會；(2) 召開成立大會，出席業主議決成立法團；(3) 向民政事務總署提交成立申請文件；(4) 署長審查後頒發法團成立書。",
-    "intent": "sop_procedure"
+    "intent": "sop_procedure",
+    "category": "formation_of_owners_corporation",
+    "complexity": "medium"
   },
   {
     "question": "業主大會的召開程序係點？要幾多日前通知？",
     "ground_truth": "根據《建築物管理條例》，召開業主大會須提前不少於14日以書面通知所有業主，通知應列明會議日期、時間、地點及議程。特別業主大會由管委會或不少於20%份數業主申請召開，通知期同樣為14日。",
-    "intent": "sop_procedure"
+    "intent": "sop_procedure",
+    "category": "general_meetings",
+    "complexity": "medium"
   },
   {
     "question": "業主如何申請查閱法團或管理公司的賬目及財務紀錄？",
     "ground_truth": "根據《建築物管理條例》第344章，業主可向管委會或管理公司提出書面要求查閱賬目，法團須在合理時間內讓業主查閱。業主亦可要求取得賬目副本，法團可就副本收取合理費用。",
-    "intent": "sop_procedure"
+    "intent": "sop_procedure",
+    "category": "financial_arrangements",
+    "complexity": "medium"
   },
   {
     "question": "如何提出罷免管理委員會委員？程序係點？",
     "ground_truth": "罷免管委會委員須召開特別業主大會，由持有不少於20%份數的業主提出申請。會議須提前14日通知全體業主，以普通決議（出席業主過半數同意）通過罷免議案。罷免後管委會可由剩餘委員補選或召開會議另行選舉。",
-    "intent": "sop_procedure"
+    "intent": "sop_procedure",
+    "category": "management_committee",
+    "complexity": "medium"
   },
   {
     "question": "業主如何正式終止同物業管理公司的合約並更換管理公司？",
     "ground_truth": "更換物業管理公司須先在業主大會通過決議，按管理合約條款發出終止通知（通常需提前一定期間）。法團須進行招標程序選定新管理公司，並在合約到期後辦理交接手續，包括移交所有財務紀錄、備用金及相關文件。",
-    "intent": "sop_procedure"
+    "intent": "sop_procedure",
+    "category": "procurement_arrangements",
+    "complexity": "medium"
   },
   {
     "question": "如何投訴違反大廈公契（DMC）的業主或住客？有何程序？",
     "ground_truth": "業主或住客違反大廈公契可採取以下步驟：(1) 向管委會或管理公司書面投訴；(2) 管委會發出書面警告要求改正；(3) 如仍不改正，法團可向法庭申請禁制令或追討損失；(4) 嚴重情況下可向土地審裁處申請裁決。",
-    "intent": "sop_procedure"
+    "intent": "sop_procedure",
+    "category": "responsibilities_and_rights_of_owners",
+    "complexity": "medium"
   },
   {
     "question": "業主如何申請召開特別業主大會？需要什麼文件？",
     "ground_truth": "持有不少於20%份數的業主可以書面向管委會申請召開特別業主大會，須提交申請書列明召開原因及擬議議程。如管委會在收到申請後21日內未有召開，申請業主可自行召開特別業主大會，並提前14日書面通知全體業主。",
-    "intent": "sop_procedure"
+    "intent": "sop_procedure",
+    "category": "general_meetings",
+    "complexity": "medium"
   },
   {
     "question": "管理公司一直拒絕提供賬目，業主可以點做？",
     "ground_truth": "如管理公司拒絕提供賬目，業主可採取以下行動：(1) 召開業主大會，通過決議要求管理公司提供賬目；(2) 向民政事務總署投訴；(3) 委託會計師核數；(4) 如情況嚴重，業主可向法庭申請強制令要求管理公司提供賬目，或考慮終止管理合約。",
-    "intent": "dispute"
+    "intent": "dispute",
+    "category": "duties_of_manager",
+    "complexity": "medium"
   },
   {
     "question": "業主拒絕繳交管理費，法團可以透過什麼法律途徑追討？",
     "ground_truth": "法團可透過以下途徑追討欠交管理費：(1) 向小額錢債審裁處提出申請（欠款75,000元或以下）；(2) 向區域法院或高等法院入稟（欠款較高）；(3) 申請在土地註冊處登記欠款，形成土地押記；(4) 在業主出售物業時優先收取欠款。",
-    "intent": "dispute"
+    "intent": "dispute",
+    "category": "financial_arrangements",
+    "complexity": "medium"
   },
   {
     "question": "鄰居單位漏水導致我的單位損毀，責任應該由誰承擔？",
     "ground_truth": "漏水責任視乎漏水源頭而定。如漏水源自樓上業主單位內的喉管或設施損毀，業主須負責維修及賠償下層損失。如漏水來自公用喉管或公用部分，則由法團負責維修。業主可委託持牌承辦商作滲水測試，並可向屋宇署/食環署「屋宇滲水聯合辦事處」投訴。",
-    "intent": "dispute"
+    "intent": "dispute",
+    "category": "responsibilities_and_rights_of_owners",
+    "complexity": "medium"
   },
   {
     "question": "管理委員會的決議被指程序不當，業主應如何申訴？",
     "ground_truth": "如業主認為管委會決議程序不當，可採取以下步驟：(1) 以書面向管委會提出異議，要求重新召開業主大會審議；(2) 召集不少於20%份數業主聯署申請召開特別業主大會推翻決議；(3) 如涉及法律程序違規，可向民政事務總署投訴；(4) 嚴重情況下可向法庭申請司法覆核。",
-    "intent": "dispute"
+    "intent": "dispute",
+    "category": "management_committee",
+    "complexity": "hard"
   },
   {
     "question": "業主反對管委會通過加收管理費，有何法律途徑提出異議？",
     "ground_truth": "業主反對管理費加幅可採取以下行動：(1) 在業主大會上投票反對；(2) 聯合其他業主召開特別業主大會，推翻管委會決議；(3) 如加費幅度不合理，可向民政事務總署投訴；(4) 查閱法團賬目，確認加費是否有合理財務依據；(5) 若管委會違反大廈公契規定，可向法庭尋求救濟。",
-    "intent": "dispute"
+    "intent": "dispute",
+    "category": "financial_arrangements",
+    "complexity": "hard"
   },
   {
     "question": "物業管理公司違反管理合約，業主或法團有什麼法律救濟？",
     "ground_truth": "如管理公司違反管理合約，法團可採取以下措施：(1) 以書面通知管理公司違約，要求在指定期限內糾正；(2) 按合約條款向管理公司索償損失；(3) 如違約情況嚴重，法團可行使合約終止權；(4) 向法庭提出違約訴訟追討損失；(5) 向物業管理業監管局投訴（如管理公司持牌）。",
-    "intent": "dispute"
+    "intent": "dispute",
+    "category": "duties_of_manager",
+    "complexity": "hard"
+  },
+
+  {
+    "question": "業主立案法團嘅英文全名係咩？",
+    "ground_truth": "業主立案法團的英文全名為 Owners' Corporation，常簡稱為 OC。",
+    "intent": "legal_definition",
+    "category": "owners_corporation",
+    "complexity": "simple"
+  },
+  {
+    "question": "管委會係咩嘅縮寫？",
+    "ground_truth": "管委會係管理委員會（Management Committee）的縮寫，是業主立案法團的執行機構，負責日常管理事務。",
+    "intent": "legal_definition",
+    "category": "management_committee",
+    "complexity": "simple"
+  },
+  {
+    "question": "《建築物管理條例》係香港哪條法例？",
+    "ground_truth": "《建築物管理條例》係香港法例第344章（Cap. 344），是規管香港建築物業主立案法團成立及運作的主要法例。",
+    "intent": "legal_definition",
+    "category": "building_management_ordinance",
+    "complexity": "simple"
+  },
+  {
+    "question": "管理費同儲備基金有咩唔同？",
+    "ground_truth": "管理費是業主按月繳交用於支付大廈日常管理及運作開支的費用，包括保安、清潔、電費等。儲備基金則是法團按規定積累的長期儲蓄，專門用於大廈日後的大型維修或翻新工程，通常不得挪作日常開支之用。",
+    "intent": "legal_definition",
+    "category": "financial_arrangements",
+    "complexity": "simple"
+  },
+  {
+    "question": "業主立案法團需唔需要向政府登記？",
+    "ground_truth": "需要。業主立案法團須向民政事務總署提交申請，完成登記手續後，署長頒發法團成立書，法團方告正式成立並取得法人地位。未完成登記則不具備法律效力。",
+    "intent": "legal_definition",
+    "category": "formation_of_owners_corporation",
+    "complexity": "simple"
+  },
+
+  {
+    "question": "管委會委員有冇任期限制？",
+    "ground_truth": "根據《建築物管理條例》，管委會委員的任期通常由大廈公契或業主大會決議訂定，一般每屆任期不超過兩年。委員可在任期屆滿後重新參選連任，但須符合業主資格，且在任期內不得有欠交管理費等違規情況。",
+    "intent": "legal_definition",
+    "category": "appointment_of_committee_members",
+    "complexity": "medium"
+  },
+  {
+    "question": "管委會開會有冇最低次數要求？",
+    "ground_truth": "根據《建築物管理條例》，管委會須定期召開會議處理法團事務。法例並無明確訂定每年最低會議次數，但實際上管委會通常每月或每季舉行例會以履行其管理職責。具體會議頻率可由大廈公契或管委會自行訂定。",
+    "intent": "legal_definition",
+    "category": "meetings_of_management_committee",
+    "complexity": "medium"
+  },
+  {
+    "question": "管委會出現懸空職位時，剩餘委員可以點處理？",
+    "ground_truth": "根據《建築物管理條例》，管委會出現懸空職位時，剩餘委員可以委任方式填補空缺，委任符合資格的業主擔任委員直至下次業主大會選舉。若懸空職位導致委員人數不足法定最低人數，須儘快召開業主大會重新選舉，以確保管委會正常運作。",
+    "intent": "sop_procedure",
+    "category": "filling_vacancies",
+    "complexity": "medium"
+  },
+  {
+    "question": "政府幾時可以對大廈發出強制樓宇管理令？",
+    "ground_truth": "根據《建築物管理條例》第344章，民政事務局局長在以下情況可向法庭申請強制樓宇管理令：(1) 大廈未有成立業主立案法團；(2) 法團未能正常運作或管理混亂；(3) 大廈公用部分嚴重失修影響安全。強制令批准後，政府委派的管理人接管大廈管理，費用由業主承擔。",
+    "intent": "legal_definition",
+    "category": "mandatory_building_management",
+    "complexity": "medium"
+  },
+  {
+    "question": "法團採購服務時有冇金額門檻需要招標？",
+    "ground_truth": "根據《建築物管理條例》附表及相關規定，法團就工程或服務採購須符合一定的競投程序。較大金額的採購須進行公開招標，邀請不少於三間承辦商報價以確保公平競爭及物有所值。具體金額門檻可由業主大會決議訂定，但原則上須避免利益衝突並確保透明度。",
+    "intent": "legal_definition",
+    "category": "procurement_arrangements",
+    "complexity": "medium"
+  },
+  {
+    "question": "管委會主席由誰選出？有冇資格要求？",
+    "ground_truth": "管委會主席通常由管委會委員互選產生，而非直接由業主大會選出。主席須為管委會委員，即須為大廈業主，並無欠交管理費或其他違規情況。主席負責主持管委會及業主大會，並代表法團處理對外事務。",
+    "intent": "legal_definition",
+    "category": "appointment_of_committee_members",
+    "complexity": "medium"
+  },
+  {
+    "question": "管委會會議的決議須如何記錄及保存？",
+    "ground_truth": "根據《建築物管理條例》，管委會會議須備存會議紀錄，詳細記載出席人數、議案內容及決議結果。會議紀錄須由主席簽署確認，並妥善保存供業主查閱。業主有權要求查閱法團的會議紀錄，法團不得無故拒絕。",
+    "intent": "sop_procedure",
+    "category": "meetings_of_management_committee",
+    "complexity": "medium"
+  },
+  {
+    "question": "物業管理公司有咩法定責任須要履行？",
+    "ground_truth": "物業管理公司的法定責任包括：(1) 按管理合約及大廈公契妥善管理公用部分；(2) 保存完整財務賬目並定期向法團匯報；(3) 應業主要求提供賬目查閱；(4) 及時安排公用部分的維修及保養；(5) 持牌管理公司須遵守物業管理業監管局的守則及規定；(6) 在合約終止時完整移交所有文件、賬目及備用金。",
+    "intent": "legal_definition",
+    "category": "duties_of_manager",
+    "complexity": "medium"
+  },
+
+  {
+    "question": "比較《建築物管理條例》同大廈公契在業主權利保障方面的分別，如兩者出現衝突應以哪個為準？",
+    "ground_truth": "《建築物管理條例》（第344章）係法定條例，為業主提供最低限度的法律保障，包括成立法團的權利、查閱賬目的權利及召開業主大會的程序。大廈公契（DMC）係業主與發展商訂立的私人合約，可就大廈管理作出額外規定。如兩者出現衝突，原則上以《建築物管理條例》的規定優先，因為法例的強制性條文不可被合約條款所取代；但公契可在法例最低要求以外附加更高標準的規定。",
+    "intent": "legal_definition",
+    "category": "building_management_ordinance",
+    "complexity": "hard"
+  },
+  {
+    "question": "如果大廈業主人數眾多而難以聯絡，成立業主立案法團面對哪些實際法律障礙，以及有何解決方法？",
+    "ground_truth": "成立業主立案法團面對的主要障礙包括：(1) 難以取得持有20%份數業主的書面同意申請召開成立大會；(2) 業主地址分散，難以發出通知；(3) 出席人數不足法定人數。解決方法包括：(1) 向土地註冊處查冊取得業主資料；(2) 在大廈顯眼處張貼通知；(3) 向民政事務處尋求協助；(4) 申請延期召開大會；(5) 如業主大會屢次流產，可向民政事務局申請介入協助。",
+    "intent": "sop_procedure",
+    "category": "formation_of_owners_corporation",
+    "complexity": "hard"
+  },
+  {
+    "question": "業主大會上的普通決議、特別決議同一致決議各需要多少票？如業主未能親身出席，可否委派代理人投票？",
+    "ground_truth": "根據《建築物管理條例》：(1) 普通決議須由出席業主過半數（逾50%份數）通過；(2) 特別決議須由出席業主不少於75%份數通過；(3) 一致決議則須所有出席業主一致同意。業主如未能親身出席，可按《建築物管理條例》規定委派代理人出席及投票，但代理人資格及人數限制須符合條例規定及大廈公契的相關條款。",
+    "intent": "legal_definition",
+    "category": "general_meetings",
+    "complexity": "hard"
+  },
+  {
+    "question": "法團的財務管理責任包括哪些方面？如管委會委員在財務管理上失職，業主可採取哪些法律行動追究責任？",
+    "ground_truth": "法團的財務管理責任包括：(1) 向業主收取管理費及儲備基金；(2) 按核准預算管理支出；(3) 保存完整財務賬目；(4) 每年進行獨立審計；(5) 向業主公開財務報告。如管委會委員財務失職，業主可：(1) 在業主大會上通過決議罷免失職委員；(2) 向民政事務總署投訴；(3) 委託獨立核數師審查賬目；(4) 就管委會委員違反信託責任向法庭提出民事訴訟追討損失。",
+    "intent": "dispute",
+    "category": "financial_arrangements",
+    "complexity": "hard"
+  },
+  {
+    "question": "業主對公用部分的維修責任同個人單位的維修責任有何分別？如業主拒絕配合維修工程，法團有何法律手段強制執行？",
+    "ground_truth": "業主個人單位內部的維修責任由業主自行承擔，而大廈公用部分（如外牆、天台、走廊、升降機等）的維修責任則由全體業主透過法團共同承擔，費用按份數攤分。如業主拒絕配合涉及公用部分的維修工程，法團可：(1) 召開業主大會通過強制維修決議；(2) 向法庭申請進入令，強制業主允許工人進入；(3) 就業主阻礙維修向法庭申請禁制令；(4) 追討因業主阻礙而造成的額外維修費用。",
+    "intent": "dispute",
+    "category": "responsibilities_and_rights_of_owners",
+    "complexity": "hard"
   }
 ]

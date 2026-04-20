@@ -21,6 +21,7 @@ from app.services.ingestion.base import (
     detect_language,
 )
 from app.services.ingestion.court_case.court_case_processor import CourtCaseProcessor
+from app.services.ingestion.court_case.scraped_case_processor import ScrapedCaseProcessor
 from app.services.ingestion.embedding import EmbeddingService
 from app.services.ingestion.guideline.guideline_processor import GuidelineProcessor
 from app.services.ingestion.legislation.legislation_parser import LegislationProcessor
@@ -29,16 +30,18 @@ from app.services.ingestion.legislation.legislation_parser import LegislationPro
 # File type → processor mapping
 # ---------------------------------------------------------------------------
 _PROCESSORS: dict[str, BaseProcessor] = {
-    "legislation": LegislationProcessor(),
-    "court_case": CourtCaseProcessor(),
-    "guideline": GuidelineProcessor(),
+    "legislation":    LegislationProcessor(),
+    "court_case":     CourtCaseProcessor(),
+    "scraped_case":   ScrapedCaseProcessor(),
+    "guideline":      GuidelineProcessor(),
 }
 
 # Subdirectory name → processor key + file glob
 _DIR_MAP: dict[str, tuple[str, str]] = {
-    "legislation": ("legislation", "*.rtf"),
-    "Count_case": ("court_case", "*.doc"),
-    "guideline": ("guideline", "*.json"),
+    "legislation":         ("legislation",  "*.rtf"),
+    "Count_case":          ("court_case",   "*.doc"),
+    "Count_case/scraped":  ("scraped_case", "*.txt"),
+    "guideline":           ("guideline",    "*.json"),
 }
 
 

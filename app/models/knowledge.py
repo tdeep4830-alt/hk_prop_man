@@ -75,8 +75,8 @@ class ChildChunk(Base):
     parent_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("parent_docs.id", ondelete="CASCADE"), index=True
     )
-    # BGE-M3 produces 1024-dimensional vectors
-    embedding = Column(Vector(1024))
+    # Qwen3-Embedding-4B with Matryoshka truncation produces 1536-dimensional vectors
+    embedding = Column(Vector(1536))
     language: Mapped[str] = mapped_column(String(10))  # zh_hk, en
     search_text: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
@@ -87,7 +87,7 @@ class ChildChunk(Base):
     parent: Mapped["ParentDoc"] = relationship(back_populates="children")
 
     __table_args__ = (
-        # HNSW index for fast approximate nearest-neighbor vector search
+        # HNSW index — 1536d is within pgvector's 2000d limit.
         Index(
             "ix_child_chunks_embedding_hnsw",
             "embedding",

@@ -8,3 +8,7 @@ __pycache__/
 .pytest_cache/
 htmlcov/
 *.egg-info/
+rag_data/
+frontend/
+frontend_new/
+node_modules/

@@ -44,7 +44,10 @@ def build_chat_llm(streaming: bool = True) -> ChatOpenAI:
 
 
 def build_router_llm() -> ChatOpenAI:
-    """Fast, cheap LLM for intent classification (no streaming, temp=0)."""
+    """Fast, cheap LLM for intent classification (no streaming, temp=0).
+
+    10-second timeout prevents classifier hangs from blocking the entire pipeline.
+    """
     return ChatOpenAI(
         model=settings.LLM_ROUTER_MODEL,
         api_key=settings.SILICONFLOW_API_KEY,
@@ -52,4 +55,5 @@ def build_router_llm() -> ChatOpenAI:
         streaming=False,
         temperature=0,
         max_tokens=64,
+        request_timeout=10,
     )

@@ -37,7 +37,7 @@ class LegislationProcessor(BaseProcessor):
         self.section_pattern = re.compile(r"^(\d+[A-Z]?)\.\s*(.*)")
         self.subsection_pattern = re.compile(r"^\((\d+[A-Z]?)\)\s*(.*)")
         self.child_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=300, chunk_overlap=50
+            chunk_size=600, chunk_overlap=80
         )
 
     def process(self, file_path: Path) -> tuple[list[ParentChunk], list[ChildChunk]]:

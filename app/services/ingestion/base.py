@@ -34,7 +34,7 @@ class ParentChunk:
 class ChildChunk:
     """A small indexed unit (200-300 tokens) stored in child_chunks.
 
-    Carries the search_text for embedding (BGE-M3 1024d) and keyword search.
+    Carries the search_text for embedding (Qwen3-Embedding-4B 2560d) and keyword search.
     Links back to its parent via parent_index.
     """
 

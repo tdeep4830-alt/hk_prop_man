@@ -19,13 +19,24 @@ from app.services.ai.llm_provider import build_chat_llm
 from app.services.ai.memory import ConversationMemory
 from app.services.ai.pii_masking import PIIMaskingService
 from app.services.ai.prompts import (
+    CATEGORY_SUFFIX_MAP,
     FOLLOW_UPS,
     INTENT_SUFFIX_MAP,
     LEGAL_DISCLAIMER,
     NO_CONTEXT_MESSAGE,
+    SIMPLE_SYSTEM_PROMPT,
     SYSTEM_PROMPT_BASE,
 )
-from app.core.observability import LLM_TOKENS_TOTAL, RAG_LATENCY, RAG_QUERY_TOTAL
+from app.core.observability import (
+    LLM_TOKENS_TOTAL,
+    RAG_CATEGORY_TOTAL,
+    RAG_COMPLEXITY_TOTAL,
+    RAG_LATENCY,
+    RAG_QUERY_TOTAL,
+)
+from app.services.ai.category import CATEGORY_LABELS, Category, CategoryClassifier
+from app.services.ai.complexity import Complexity, ComplexityClassifier
+from app.services.ai.multi_hop_retriever import MultiHopRetriever
 from app.services.ai.retriever import HybridRetriever, RetrievedChunk
 from app.services.ai.router import Intent, SemanticRouter
 from app.services.ai.telemetry import TelemetryLogger
@@ -87,60 +98,103 @@ class RAGChain:
 
         yield _sse_event("conversation_id", {"conversation_id": str(conv.id)})
 
-        # 3. Intent classification + retrieval (concurrent)
+        # 3. Classify intent, complexity and domain category — all concurrent
+        # asyncio.wait_for caps each at 12s so a slow/hung SiliconFlow call
+        # cannot freeze the entire pipeline; classifiers fall back to defaults on timeout.
         intent_task = asyncio.create_task(SemanticRouter.classify(masked_query))
-        retrieval_task = asyncio.create_task(
-            HybridRetriever.retrieve(masked_query, db)
-        )
+        complexity_task = asyncio.create_task(ComplexityClassifier.classify(masked_query))
+        category_task = asyncio.create_task(CategoryClassifier.classify(masked_query))
 
-        intent: Intent = await intent_task
-        chunks: list[RetrievedChunk] = await retrieval_task
+        try:
+            intent, complexity, category = await asyncio.wait_for(
+                asyncio.gather(intent_task, complexity_task, category_task),
+                timeout=12,
+            )
+        except asyncio.TimeoutError:
+            logger.warning("Classifier tasks timed out, using defaults")
+            intent_task.cancel()
+            complexity_task.cancel()
+            category_task.cancel()
+            intent = Intent.LEGAL_DEFINITION
+            complexity = Complexity.MEDIUM
+            category = Category.OTHER
 
         yield _sse_event("intent", {"intent": intent.value})
+        yield _sse_event("complexity", {"complexity": complexity.value})
+        yield _sse_event(
+            "category",
+            {
+                "category": category.value,
+                "category_label": CATEGORY_LABELS[category],
+            },
+        )
 
-        # 4. Anti-hallucination gate
-        if not chunks:
-            yield _sse_event("content", NO_CONTEXT_MESSAGE)
-            yield _sse_event("disclaimer", LEGAL_DISCLAIMER)
-            yield _sse_event(
-                "follow_ups",
-                {"suggestions": FOLLOW_UPS.get(intent.value, FOLLOW_UPS["legal_definition"])},
-            )
-            yield _sse_event("done", "")
-
-            # Save empty response & log
-            await ConversationMemory.save_assistant_message(
-                conv.id, NO_CONTEXT_MESSAGE, None, db
-            )
-            latency_ms = int((time.monotonic() - start_time) * 1000)
-            await TelemetryLogger.log_query(
-                user_id=user.id,
-                original_query=query,
-                masked_query=masked_query,
-                pii_found=mask_result.pii_found,
-                retrieved_chunks=[],
-                intent=intent.value,
-                token_usage=None,
-                latency_ms=latency_ms,
-                llm_model="none",
-                db=db,
-            )
-            await db.commit()
-            return
+        # 4. Adaptive retrieval based on complexity tier
+        chunks: list[RetrievedChunk]
+        if complexity == Complexity.SIMPLE:
+            # No retrieval — answer directly from LLM parametric knowledge
+            chunks = []
+        elif complexity == Complexity.HARD:
+            # Multi-hop: two retrieval rounds with sub-query decomposition
+            chunks = await MultiHopRetriever.retrieve(masked_query, db)
+        else:
+            # Medium (default): standard single-step hybrid retrieval
+            chunks = await HybridRetriever.retrieve(masked_query, db)
 
         # 5. Build prompt
         history_messages = await ConversationMemory.get_history(conv.id, db)
         # Exclude the user message we just saved (last one)
         history_for_prompt = history_messages[:-1] if history_messages else []
         chat_history_text = ConversationMemory.format_history_for_prompt(history_for_prompt)
-        context_text = _build_context(chunks)
         intent_suffix = INTENT_SUFFIX_MAP.get(intent.value, "")
+        category_suffix = CATEGORY_SUFFIX_MAP.get(category.value, "")
 
-        system_content = SYSTEM_PROMPT_BASE.format(
-            intent_suffix=intent_suffix,
-            context=context_text,
-            chat_history=chat_history_text,
-        )
+        if complexity == Complexity.SIMPLE:
+            # Simple path: use lightweight prompt without context block
+            system_content = SIMPLE_SYSTEM_PROMPT.format(
+                intent_suffix=intent_suffix,
+                category_suffix=category_suffix,
+                chat_history=chat_history_text,
+            )
+        else:
+            # Anti-hallucination gate: if retrieval returned nothing, surface graceful message
+            if not chunks:
+                yield _sse_event("content", NO_CONTEXT_MESSAGE)
+                yield _sse_event("disclaimer", LEGAL_DISCLAIMER)
+                yield _sse_event(
+                    "follow_ups",
+                    {"suggestions": FOLLOW_UPS.get(intent.value, FOLLOW_UPS["legal_definition"])},
+                )
+                yield _sse_event("done", "")
+
+                await ConversationMemory.save_assistant_message(
+                    conv.id, NO_CONTEXT_MESSAGE, None, db
+                )
+                latency_ms = int((time.monotonic() - start_time) * 1000)
+                await TelemetryLogger.log_query(
+                    user_id=user.id,
+                    original_query=query,
+                    masked_query=masked_query,
+                    pii_found=mask_result.pii_found,
+                    retrieved_chunks=[],
+                    intent=intent.value,
+                    token_usage=None,
+                    latency_ms=latency_ms,
+                    llm_model="none",
+                    db=db,
+                    complexity=complexity.value,
+                    category=category.value,
+                )
+                await db.commit()
+                return
+
+            context_text = _build_context(chunks)
+            system_content = SYSTEM_PROMPT_BASE.format(
+                intent_suffix=intent_suffix,
+                category_suffix=category_suffix,
+                context=context_text,
+                chat_history=chat_history_text,
+            )
 
         messages = [
             SystemMessage(content=system_content),
@@ -185,6 +239,8 @@ class RAGChain:
             intent=intent.value,
             membership_tier=user.membership_tier.value,
         ).inc()
+        RAG_COMPLEXITY_TOTAL.labels(complexity=complexity.value).inc()
+        RAG_CATEGORY_TOTAL.labels(category=category.value).inc()
         RAG_LATENCY.observe(latency_ms / 1000)
 
         await TelemetryLogger.log_query(
@@ -198,5 +254,7 @@ class RAGChain:
             latency_ms=latency_ms,
             llm_model=llm_model_name,
             db=db,
+            complexity=complexity.value,
+            category=category.value,
         )
         await db.commit()

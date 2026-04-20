@@ -1,4 +1,16 @@
-"""Async embedding service using Qwen3-Embedding via SiliconFlow API (1024d)."""
+"""Async embedding service using Qwen3-Embedding-4B via SiliconFlow API.
+
+Upgraded from Qwen3-Embedding-0.6B (1024d) to Qwen3-Embedding-4B with
+Matryoshka truncation to 1536d.
+
+Why 1536d:
+  - Qwen3-Embedding-4B has 7x more parameters → much better semantic quality
+  - Matryoshka representation learning lets us request any sub-dimension
+  - 1536d stays within pgvector HNSW's 2000-dimension hard limit
+  - 50% more signal than 1024d with the same DB schema
+
+pgvector HNSW limit: 2000d (both HNSW and IVFFlat).
+"""
 
 import asyncio
 
@@ -7,15 +19,17 @@ import httpx
 from app.core.config import settings
 from app.core.logger import logger
 
-# SiliconFlow Qwen3-Embedding model (1024-d, cross-lingual zh/en)
-_MODEL = "Qwen/Qwen3-Embedding-0.6B"
+# Qwen3-Embedding-4B with Matryoshka truncation to 1536d
+# Stays within pgvector's 2000d HNSW limit while using the stronger 4B model.
+_MODEL = "Qwen/Qwen3-Embedding-4B"
+_EMBEDDING_DIM = 1536
 _BATCH_SIZE = 32
 _MAX_RETRIES = 3
 _RETRY_BACKOFF = 2  # seconds, doubles each retry
 
 
 class EmbeddingService:
-    """Generate 1024-dimensional embeddings via SiliconFlow's Qwen3-Embedding endpoint."""
+    """Generate 1536-dimensional embeddings via SiliconFlow's Qwen3-Embedding-4B endpoint."""
 
     def __init__(self) -> None:
         self._base_url = settings.SILICONFLOW_BASE_URL.rstrip("/")
@@ -25,7 +39,7 @@ class EmbeddingService:
     async def embed_batch(self, texts: list[str]) -> list[list[float]]:
         """Embed a list of texts, automatically chunked into batches of 32.
 
-        Returns a list of 1024-d float vectors in the same order as input.
+        Returns a list of 1536-d float vectors in the same order as input.
         """
         all_embeddings: list[list[float]] = []
 
@@ -51,6 +65,7 @@ class EmbeddingService:
             "model": _MODEL,
             "input": texts,
             "encoding_format": "float",
+            "dimensions": _EMBEDDING_DIM,   # Matryoshka truncation to 1536d
         }
         headers = {
             "Authorization": f"Bearer {self._api_key}",

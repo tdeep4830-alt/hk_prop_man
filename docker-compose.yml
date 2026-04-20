@@ -1,23 +1,4 @@
 services:
-  db:
-    image: pgvector/pgvector:pg16
-    container_name: propman-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-propman}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-propman_secret}
-      POSTGRES_DB: ${POSTGRES_DB:-propman_ai}
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-propman} -d ${POSTGRES_DB:-propman_ai}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   redis:
     image: redis:7-alpine
     container_name: propman-redis
@@ -48,8 +29,6 @@ services:
       - ./rag_data:/code/rag_data
       - ./scripts:/code/scripts
     depends_on:
-      db:
-        condition: service_healthy
       redis:
         condition: service_healthy
       phoenix:
@@ -95,7 +74,6 @@ services:
       - prometheus
 
 volumes:
-  pgdata:
   redisdata:
   phoenixdata:
   prometheusdata:
