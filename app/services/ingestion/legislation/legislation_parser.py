@@ -42,7 +42,8 @@ class LegislationProcessor(BaseProcessor):
 
     def process(self, file_path: Path) -> tuple[list[ParentChunk], list[ChildChunk]]:
         # --- Read RTF ---
-        raw = file_path.read_text(encoding="utf-8", errors="ignore")
+        # Use binary read to avoid EDEADLK (errno 35) on Docker/macOS VirtioFS volumes
+        raw = file_path.read_bytes().decode("utf-8", errors="ignore")
         text = rtf_to_text(raw)
         lang = language_from_filename(file_path.name)
 

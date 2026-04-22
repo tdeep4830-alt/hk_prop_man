@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     RAG_SCORE_THRESHOLD: float = 0.35
     RAG_TOP_K: int = 5
     RAG_MAX_HISTORY_TURNS: int = 5
-    LLM_PRIMARY_MODEL: str = "deepseek-ai/DeepSeek-V3"
+    LLM_PRIMARY_MODEL: str = "deepseek-ai/DeepSeek-V3.2"
     LLM_FALLBACK_MODEL: str = "Qwen/Qwen2.5-72B-Instruct"
     LLM_ROUTER_MODEL: str = "Qwen/Qwen2.5-7B-Instruct"
     LLM_OPENAI_MODEL: str = "gpt-4o-mini"

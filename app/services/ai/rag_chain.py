@@ -24,6 +24,7 @@ from app.services.ai.prompts import (
     INTENT_SUFFIX_MAP,
     LEGAL_DISCLAIMER,
     NO_CONTEXT_MESSAGE,
+    NO_STATUTE_COVERAGE_SUFFIX,
     SIMPLE_SYSTEM_PROMPT,
     SYSTEM_PROMPT_BASE,
 )
@@ -59,13 +60,29 @@ def _build_context(chunks: list[RetrievedChunk]) -> str:
     return "\n\n---\n\n".join(parts)
 
 
+_STATUTE_SCORE_THRESHOLD = 0.45  # minimum score to count as a meaningful statute match
+
+
+def _statute_coverage(chunks: list[RetrievedChunk]) -> bool:
+    """Return True if at least one statute chunk meets the score threshold."""
+    return any(
+        c.doc_type == "statute" and c.combined_score >= _STATUTE_SCORE_THRESHOLD
+        for c in chunks
+    )
+
+
 def _build_citations(chunks: list[RetrievedChunk]) -> list[dict]:
     """Extract citation metadata from retrieved chunks."""
     return [
         {
             "parent_id": c.parent_id,
             "doc_type": c.doc_type,
-            "title": c.metadata.get("title", c.metadata.get("source", "")),
+            "title": (
+                c.metadata.get("title")
+                or c.metadata.get("source")
+                or c.metadata.get("case_no")
+                or ""
+            ),
             "excerpt": c.parent_content[:200],
             "score": round(c.combined_score, 4),
         }
@@ -189,8 +206,10 @@ class RAGChain:
                 return
 
             context_text = _build_context(chunks)
+            has_statute = _statute_coverage(chunks)
+            statute_suffix = "" if has_statute else NO_STATUTE_COVERAGE_SUFFIX
             system_content = SYSTEM_PROMPT_BASE.format(
-                intent_suffix=intent_suffix,
+                intent_suffix=intent_suffix + statute_suffix,
                 category_suffix=category_suffix,
                 context=context_text,
                 chat_history=chat_history_text,
@@ -207,11 +226,22 @@ class RAGChain:
         llm_model_name = settings.LLM_PRIMARY_MODEL
 
         try:
-            async for chunk in llm.astream(messages):
-                token = chunk.content
-                if token:
-                    full_response += token
-                    yield _sse_event("content", token)
+            try:
+                from asyncio import timeout as _timeout  # Python 3.11+
+            except ImportError:
+                from async_timeout import timeout as _timeout  # Python 3.10
+
+            async with _timeout(90):
+                async for chunk in llm.astream(messages):
+                    token = chunk.content
+                    if token:
+                        full_response += token
+                        yield _sse_event("content", token)
+        except (TimeoutError, asyncio.TimeoutError):
+            logger.error("LLM streaming timed out after 90s")
+            error_msg = "抱歉，回答生成逾時，請稍後再試。"
+            yield _sse_event("content", error_msg)
+            full_response = full_response + error_msg if full_response else error_msg
         except Exception as e:
             logger.error("LLM streaming error", extra={"error": str(e)})
             error_msg = "抱歉，生成回答時發生錯誤，請稍後再試。"

@@ -125,6 +125,17 @@ function normalizeMarkdown(text: string, debug = false): string {
   text = text.replace(/<br\s*\/?>/gi, " ");
   text = text.replace(/\u00a0/g, " ");
 
+  // Step 1b: strip bare --- separators (render as unwanted <hr>)
+  text = text.replace(/(?:^|\n)[ \t]*---[ \t]*(?=\n|$)/g, "");
+
+  // Step 1c: fix unbalanced ** — e.g. "免責聲明**" missing opening **
+  // Matches a word boundary followed by text** that has no opening **
+  text = text.replace(/(^|\n)([ \t]*)([^*\n][^\n]*)\*\*[ \t]*(\n|$)/g, (_, pre, indent, inner, post) => {
+    // Only fix if inner doesn't already contain an opening **
+    if (inner.includes("**")) return _ ;
+    return `${pre}${indent}**${inner}**${post}`;
+  });
+
   // Step 2: reconstruct table rows (single-line LLM table → proper multiline GFM)
   text = reconstructTable(text);
 
@@ -148,10 +159,21 @@ function normalizeMarkdown(text: string, debug = false): string {
     if (i % 2 === 1) return seg; // table block — leave untouched
     return seg
       .replace(/([^\n])(#{1,6} )/g, "$1\n\n$2")       // blank line before headings
+      // blank line before Chinese numbered bold headings (**一、 **二、 …) if not already blank
+      .replace(/([^\n])(\n)([ \t]*\*\*[一二三四五六七八九十]+、)/g, "$1\n\n$3")
       .replace(/([^\n*])((?<!\*)\* )/g, "$1\n$2")      // newline before * list items (not **)
       .replace(/([^\n])(- (?=[^\s-]))/g, "$1\n$2")     // newline before - list items
-      .replace(/([^\n])(> )/g, "$1\n\n$2");             // blank line before blockquotes
+      .replace(/([^\n])(> )/g, "$1\n\n$2")             // blank line before blockquotes
+      // blank line after citation [來源: ...] when followed by more content on same line
+      .replace(/(\[來源:[^\]]+\])[ \t]+(?=\S)/g, "$1\n\n")
+      // blank line before standalone bold sub-headings: **關鍵因素一：** or ***題目***
+      .replace(/([^\n])(\n[ \t]*\*{2,3}[^*\n]+\*{2,3}[ \t]*\n)/g, "$1\n\n$2");
   }).join("");
+
+  // Step 5: ensure content lines separated by single \n become paragraphs (\n\n)
+  // ReactMarkdown treats single \n as a space — any non-empty line following
+  // another non-empty line that isn't already blank-line-separated needs \n\n
+  text = text.replace(/([^\n])(\n)([ \t]*[^-*>#|\s\n][^\n]*)/g, "$1\n\n$3");
 
   const result = text.replace(/\n{3,}/g, "\n\n").trim();
   if (debug) console.log("[NORMALIZED OUTPUT]\n" + result);

@@ -6,6 +6,7 @@
 
 import { create } from "zustand";
 import type { CitationItem } from "@/types/api";
+import type { ConversationSummary, MessageOut } from "@/lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,16 +32,19 @@ export interface Conversation {
 // ─── State ────────────────────────────────────────────────────────────────────
 
 interface ChatState {
-  conversations: Conversation[];
-  activeConvId:  string | null;
+  conversations:  Conversation[];
+  activeConvId:   string | null;
+  historyLoaded:  boolean;
 
-  activeConversation: () => Conversation | null;
-  newConversation:    () => string;
-  selectConversation: (id: string) => void;
-  setBackendConvId:   (localId: string, backendId: string) => void;
-  addMessage:         (localConvId: string, msg: Message) => void;
-  appendToken:        (localConvId: string, token: string) => void;
-  patchLastMessage:   (localConvId: string, patch: Partial<Message>) => void;
+  activeConversation:   () => Conversation | null;
+  newConversation:      () => string;
+  selectConversation:   (id: string) => void;
+  setBackendConvId:     (localId: string, backendId: string) => void;
+  addMessage:           (localConvId: string, msg: Message) => void;
+  appendToken:          (localConvId: string, token: string) => void;
+  patchLastMessage:     (localConvId: string, patch: Partial<Message>) => void;
+  hydrateConversations: (summaries: ConversationSummary[]) => void;
+  hydrateMessages:      (backendConvId: string, msgs: MessageOut[]) => void;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -59,8 +63,9 @@ function updateLastAssistant(
 // ─── Store ────────────────────────────────────────────────────────────────────
 
 export const useChatStore = create<ChatState>()((set, get) => ({
-  conversations: [],
-  activeConvId:  null,
+  conversations:  [],
+  activeConvId:   null,
+  historyLoaded:  false,
 
   activeConversation: () => {
     const { conversations, activeConvId } = get();
@@ -123,5 +128,35 @@ export const useChatStore = create<ChatState>()((set, get) => ({
           messages: updateLastAssistant(c.messages, (m) => ({ ...m, ...patch })),
         };
       }),
+    })),
+
+  hydrateConversations: (summaries) =>
+    set({
+      historyLoaded: true,
+      conversations: summaries.map((s) => ({
+        id:           s.id,
+        backendConvId: s.id,
+        title:        s.title,
+        messages:     [],        // loaded lazily on select
+        createdAt:    new Date(s.created_at).getTime(),
+      })),
+      activeConvId: summaries[0]?.id ?? null,
+    }),
+
+  hydrateMessages: (backendConvId, msgs) =>
+    set((s) => ({
+      conversations: s.conversations.map((c) =>
+        c.id !== backendConvId ? c : {
+          ...c,
+          messages: msgs.map((m) => ({
+            id:          m.id,
+            role:        m.role,
+            content:     m.content,
+            citations:   m.citations as CitationItem[] | undefined,
+            isStreaming: false,
+            timestamp:   new Date(m.created_at).getTime(),
+          })),
+        },
+      ),
     })),
 }));

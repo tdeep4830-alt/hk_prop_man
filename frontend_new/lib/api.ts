@@ -98,6 +98,40 @@ export const adminApi = {
   },
 };
 
+// ─── Chat history endpoints ────────────────────────────────────────────────
+
+export interface ConversationSummary {
+  id:         string;
+  title:      string;
+  created_at: string;
+}
+
+export interface MessageOut {
+  id:         string;
+  role:       "user" | "assistant";
+  content:    string;
+  citations:  unknown[] | null;
+  created_at: string;
+}
+
+export const chatApi = {
+  getConversations: (): Promise<ConversationSummary[]> =>
+    fetch(`${BASE}/chat/conversations`, {
+      headers: authHeaders(),
+    }).then((r) => {
+      if (!r.ok) return r.json().then((e) => Promise.reject(e));
+      return r.json();
+    }),
+
+  getMessages: (convId: string): Promise<MessageOut[]> =>
+    fetch(`${BASE}/chat/conversations/${convId}/messages`, {
+      headers: authHeaders(),
+    }).then((r) => {
+      if (!r.ok) return r.json().then((e) => Promise.reject(e));
+      return r.json();
+    }),
+};
+
 // ─── Chat SSE stream ────────────────────────────────────────────────────────
 
 /**

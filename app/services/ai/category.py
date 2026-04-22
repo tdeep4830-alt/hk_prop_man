@@ -63,8 +63,20 @@ class CategoryClassifier:
         try:
             raw = await _category_chain.ainvoke({"query": query})
             category_str = raw.strip().lower()
+
             if category_str in _VALID_CATEGORIES:
                 return Category(category_str)
+
+            # Normalize: collapse multiple spaces/underscores, then try again
+            normalized = "_".join(category_str.replace("-", "_").split())
+            if normalized in _VALID_CATEGORIES:
+                return Category(normalized)
+
+            # Fuzzy fallback: find the valid category with the most character overlap
+            best = max(_VALID_CATEGORIES, key=lambda v: sum(c in category_str for c in v))
+            if len(best) > 0 and sum(c in category_str for c in best) / len(best) >= 0.85:
+                return Category(best)
+
             logger.warning(
                 "Category classifier returned unknown value", extra={"raw": raw}
             )

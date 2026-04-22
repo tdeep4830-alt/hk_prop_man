@@ -5,17 +5,19 @@ import { ChevronDown, ChevronUp, FileText, Scale, BookOpen, Search } from "lucid
 import type { CitationItem } from "@/types/api";
 
 const DOC_TYPE_LABELS: Record<string, string> = {
-  statute:   "法規",
-  case_law:  "判例",
-  guideline: "指引",
-  contract:  "公契",
+  statute:     "法規",
+  case_law:    "判例",
+  court_case:  "法庭案例",
+  guideline:   "指引",
+  contract:    "公契",
 };
 
 const DOC_TYPE_ICONS: Record<string, React.ElementType> = {
-  statute:   Scale,
-  case_law:  Search,
-  guideline: BookOpen,
-  contract:  FileText,
+  statute:     Scale,
+  case_law:    Search,
+  court_case:  Scale,
+  guideline:   BookOpen,
+  contract:    FileText,
 };
 
 function scoreColor(score: number): string {

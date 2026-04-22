@@ -7,6 +7,7 @@ import { Menu }                              from "lucide-react";
 import { useAuthStore, selectIsAuthenticated, selectIsHydrated } from "@/stores/authStore";
 import { useChatStore }   from "@/stores/chatStore";
 import { useChatStream }  from "@/hooks/useChatStream";
+import { chatApi }        from "@/lib/api";
 
 import { Sidebar }      from "@/components/chat/Sidebar";
 import { ChatMessages } from "@/components/chat/ChatMessages";
@@ -36,12 +37,36 @@ export default function ChatPage() {
     addMessage,
     appendToken,
     patchLastMessage,
+    historyLoaded,
+    hydrateConversations,
+    hydrateMessages,
   } = useChatStore();
 
+  // Load conversation list from backend once after auth hydration
   useEffect(() => {
-    if (conversations.length === 0) newConversation();
+    if (!isHydrated || !isAuthenticated || historyLoaded) return;
+    chatApi.getConversations()
+      .then((convs) => {
+        if (convs.length > 0) {
+          hydrateConversations(convs);
+        } else {
+          newConversation();
+        }
+      })
+      .catch(() => newConversation());
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isHydrated, isAuthenticated]);
+
+  // Lazy-load messages when switching to a conversation with no messages
+  useEffect(() => {
+    if (!activeConvId) return;
+    const conv = useChatStore.getState().conversations.find((c) => c.id === activeConvId);
+    if (!conv?.backendConvId || conv.messages.length > 0) return;
+    chatApi.getMessages(conv.backendConvId)
+      .then((msgs) => hydrateMessages(conv.backendConvId!, msgs))
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeConvId]);
 
   const activeConv = activeConversation();
 
@@ -100,7 +125,7 @@ export default function ChatPage() {
      sendMessage, setBackendConvId, appendToken, patchLastMessage],
   );
 
-  const handleNewChat   = () => { newConversation(); setSidebarOpen(false); };
+  const handleNewChat    = () => { newConversation(); setSidebarOpen(false); };
   const handleSelectConv = (id: string) => { selectConversation(id); setSidebarOpen(false); };
   const handleLogout    = () => { abort(); logout(); router.push("/login"); };
 
