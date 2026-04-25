@@ -1,11 +1,15 @@
 """HK-PropTech AI — FastAPI application entry point."""
 
+import sys
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from redis.asyncio import from_url as redis_from_url
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 from sqlalchemy import text
 
 from app.api.v1.admin import router as admin_router
@@ -19,6 +23,23 @@ from app.core.middleware import LocaleMiddleware
 from app.core.observability import setup_metrics, setup_tracing
 from app.db.session import engine
 
+_WEAK_SECRET = "change_me_to_a_random_secret"
+
+# ---------------------------------------------------------------------------
+# Startup guard: refuse to run with weak JWT secret in production
+# ---------------------------------------------------------------------------
+if settings.ENVIRONMENT == "production" and settings.JWT_SECRET == _WEAK_SECRET:
+    logger.critical("JWT_SECRET is set to the default placeholder. Refusing to start in production.")
+    sys.exit(1)
+
+if settings.JWT_SECRET == _WEAK_SECRET:
+    logger.warning("JWT_SECRET is using the default placeholder — set a strong secret before deploying.")
+
+# ---------------------------------------------------------------------------
+# Rate limiter (backed by Redis)
+# ---------------------------------------------------------------------------
+limiter = Limiter(key_func=get_remote_address, storage_uri=settings.REDIS_URL)
+
 
 # ---------------------------------------------------------------------------
 # Lifespan: startup / shutdown
@@ -29,6 +50,7 @@ async def lifespan(app: FastAPI):
     if settings.ENABLE_TRACING:
         setup_tracing(settings.PHOENIX_ENDPOINT)
     app.state.redis = redis_from_url(settings.REDIS_URL, decode_responses=True)
+    app.state.limiter = limiter
     yield
     await app.state.redis.aclose()
     await engine.dispose()
@@ -44,13 +66,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # Middleware (order matters — outermost first)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Accept-Language"],
 )
 app.add_middleware(LocaleMiddleware)
 

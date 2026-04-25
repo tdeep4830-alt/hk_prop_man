@@ -115,8 +115,10 @@ export default function ChatPage() {
         onDisclaimer:     (disclaimer) => patchLastMessage(convId!, { disclaimer }),
         onFollowUps:      (followUps)  => patchLastMessage(convId!, { followUps }),
         onDone:           ()          => patchLastMessage(convId!, { isStreaming: false }),
-        onError:          (msg)       => patchLastMessage(convId!, {
-          content:     `⚠️ 出現錯誤：${msg}`,
+        onError: (msg) => patchLastMessage(convId!, {
+          content: msg === "__quota_exceeded__"
+            ? "🙏 感謝您使用 PropManAI Beta！\n\n您今日的免費查詢次數已用盡。此為 Beta 測試版本，每位用戶每日可免費查詢 10 次。\n\n正式版本即將推出，屆時將提供無限次查詢及更多功能，敬請期待！"
+            : `⚠️ 出現錯誤：${msg}`,
           isStreaming: false,
         }),
       });

@@ -59,6 +59,11 @@ export function useChatStream() {
         );
 
         if (!response.ok) {
+          if (response.status === 429) {
+            callbacks.onError("__quota_exceeded__");
+            setIsStreaming(false);
+            return;
+          }
           const body = await response.json().catch(() => ({}));
           throw new Error(
             typeof body.detail === "string" ? body.detail : `HTTP ${response.status}`,

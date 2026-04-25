@@ -1,6 +1,8 @@
 """Authentication endpoints: register, login, current user."""
 
 from fastapi import APIRouter, Depends, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import create_access_token, get_current_user
@@ -15,12 +17,14 @@ from app.schemas.auth import (
 from app.services.security.auth_service import authenticate_user, register_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+_limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post("/register", response_model=UserResponse, status_code=201)
+@_limiter.limit("5/minute")
 async def register(
-    body: RegisterRequest,
     request: Request,
+    body: RegisterRequest,
     db: AsyncSession = Depends(get_db),
 ):
     user = await register_user(
@@ -33,9 +37,10 @@ async def register(
 
 
 @router.post("/login", response_model=TokenResponse)
+@_limiter.limit("10/minute")
 async def login(
-    body: LoginRequest,
     request: Request,
+    body: LoginRequest,
     db: AsyncSession = Depends(get_db),
 ):
     user = await authenticate_user(
